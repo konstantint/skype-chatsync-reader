@@ -262,10 +262,6 @@ class SkypeChatSyncParser(object):
                 self.conversation.append(ConversationMessage(msg.header.timestamp, participant1 if user_id == user1_id else participant2, unicode(msg_text, 'utf-8'), is_edit))
             except:
                 self.errors += 1
-                
-
-#s = SkypeChatSyncScanner(open(r'C:\Users\Konstantin\AppData\Roaming\Skype\konstantin.tretjakov\chatsync\99\99f20bfc3fe89cb7.dat','rb'))
-#s.scan()
 
 
 def parse_chatsync_file(filename):
