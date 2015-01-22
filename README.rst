@@ -27,6 +27,8 @@ The easiest way to install most Python packages is via ``easy_install`` or ``pip
     
 If you want to use the GUI tool, you will also need to install `wxPython 2.8 <http://wxpython.org/>`__ or later (it is not installed automatically).
 
+A standalone executable version of the GUI tool for Windows can be downloaded `here <http://fouryears.eu/wp-content/uploads/skype-chatsync-viewer.exe>`__.
+
 Usage
 -----
 
