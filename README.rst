@@ -14,6 +14,10 @@ It may fail on some files, and on other files will only be able to extract messa
 
 In addition, the package contains a simple wx-based GUI tool for searching the log files visually.
 
+.. image:: http://fouryears.eu/wp-content/uploads/2015/01/skype-chatsync-viewer.png
+   :align: center
+   :target: http://fouryears.eu/2015/01/22/skype-removed-messages/
+
 Installation
 ------------
 
@@ -55,5 +59,5 @@ I do not plan to maintain this actively. Feel free to contribute via `Github <ht
 Copyright
 ---------
 
- * Copyright 2015, Konstantin Tretyakov
+ * Copyright 2015, `Konstantin Tretyakov <http://kt.era.ee/>`__
  * MIT License
