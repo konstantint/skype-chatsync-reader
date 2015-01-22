@@ -5,9 +5,9 @@
 #
 
 import wx
-from wx.lib.pubsub import Publisher
 import os
 import os.path
+import sys
 from threading import Thread
 import traceback
 import warnings
@@ -24,12 +24,13 @@ from .scanner import parse_chatsync_profile_dir
 class ChatSyncLoader(Thread):
     '''
     A thread object that loads the chatsync conversation objects from a given dirname.
-    When finished sents the "conversations_loaded" message via wx.lib.pubsub.Publisher().
+    When finished invokes the .on_conversations_loaded on the provided main_frame object.
     '''
     
-    def __init__(self, dirname):
+    def __init__(self, dirname, main_frame):
         Thread.__init__(self)
         self.dirname = dirname
+        self.main_frame = main_frame
         self.start()
     
     def run(self):
@@ -38,7 +39,7 @@ class ChatSyncLoader(Thread):
         except:
             traceback.print_exc()
             conversations = []
-        wx.CallAfter(Publisher().sendMessage, "conversations_loaded", conversations)
+        wx.CallAfter(self.main_frame.on_conversations_loaded, conversations)
 
 
 class ConversationSearcher(object):
@@ -92,11 +93,6 @@ class MainFrame(wx.Frame):
         # begin wxGlade: MainFrame.__init__
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
-        self.splitter = wx.SplitterWindow(self, wx.ID_ANY, style=wx.SP_3D | wx.SP_BORDER)
-        self.pane_left = wx.Panel(self.splitter, wx.ID_ANY, style=wx.STATIC_BORDER)
-        self.list_conversations = wx.ListCtrl(self.pane_left, wx.ID_ANY, style=wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.LC_HRULES | wx.LC_VRULES | wx.SUNKEN_BORDER)
-        self.pane_right = wx.Panel(self.splitter, wx.ID_ANY, style=wx.NO_BORDER)
-        self.text_chatcontent = wx.TextCtrl(self.pane_right, wx.ID_ANY, u"Use Menu \u2192 Open to load the chatsync directory.", style=wx.TE_MULTILINE | wx.TE_READONLY)
         
         # Menu Bar
         self.menubar = wx.MenuBar()
@@ -113,18 +109,26 @@ class MainFrame(wx.Frame):
         self.menubar.Append(self.mi_menu, "&Menu")
         self.SetMenuBar(self.menubar)
         # Menu Bar end
+        self.splitter = wx.SplitterWindow(self, wx.ID_ANY, style=wx.SP_3D | wx.SP_BORDER)
+        self.pane_left = wx.Panel(self.splitter, wx.ID_ANY, style=wx.STATIC_BORDER)
+        self.list_conversations = wx.ListCtrl(self.pane_left, wx.ID_ANY, style=wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.LC_HRULES | wx.LC_VRULES | wx.SUNKEN_BORDER)
+        self.pane_right = wx.Panel(self.splitter, wx.ID_ANY, style=wx.NO_BORDER)
+        self.text_chatcontent = wx.TextCtrl(self.pane_right, wx.ID_ANY, u"Use Menu \u2192 Open to load the chatsync directory.", style=wx.TE_MULTILINE | wx.TE_READONLY)
 
         self.__set_properties()
         self.__do_layout()
 
-        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_conversation_selected, self.list_conversations)
         self.Bind(wx.EVT_MENU, self.on_open, self.mi_open)
         self.Bind(wx.EVT_MENU, self.on_find, self.mi_find)
         self.Bind(wx.EVT_MENU, self.on_find_next, self.mi_find_next)
         self.Bind(wx.EVT_MENU, self.on_quit, self.Exit)
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_conversation_selected, self.list_conversations)
         # end wxGlade
         
-        Publisher().subscribe(self.on_conversations_loaded, "conversations_loaded")
+        if sys.platform == 'win32':
+            icon = wx.Icon(sys.executable, wx.BITMAP_TYPE_ICO)
+            self.SetIcon(icon)       
+        
         self.searcher = ConversationSearcher()
         self.conversation_message_coords = []   # messageno ->(beginpos, endpos). Used to find begin and end points for selection highlights in the textbox.
         self.mi_find.Enable(False)
@@ -146,7 +150,7 @@ class MainFrame(wx.Frame):
         self.pane_left.SetSizer(sizer_left)
         sizer_right.Add(self.text_chatcontent, 1, wx.ALL | wx.EXPAND, 0)
         self.pane_right.SetSizer(sizer_right)
-        self.splitter.SplitVertically(self.pane_left, self.pane_right, 300)
+        self.splitter.SplitVertically(self.pane_left, self.pane_right, 200)
         sizer_root.Add(self.splitter, 1, wx.ALL | wx.EXPAND, 0)
         self.SetSizer(sizer_root)
         self.Layout()
@@ -164,13 +168,13 @@ class MainFrame(wx.Frame):
             self.text_chatcontent.Clear()
             self.text_chatcontent.SetValue("Please wait...")
             self.mi_open.Enable(False)
-            ChatSyncLoader(dialog.GetPath())
+            ChatSyncLoader(dialog.GetPath(), self)
             
     def on_quit(self, event):  # wxGlade: MainFrame.<event_handler>
         self.Close()
 
     def on_conversations_loaded(self, conversations):
-        conversations = [c for c in conversations.data if not c.is_empty and len(c.conversation) > 0]
+        conversations = [c for c in conversations if not c.is_empty and len(c.conversation) > 0]
         conversations.sort(lambda x,y: x.timestamp - y.timestamp)
         self.conversations = conversations
         self.searcher = ConversationSearcher(conversations)

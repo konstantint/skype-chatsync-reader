@@ -61,3 +61,4 @@ Copyright
 
  * Copyright 2015, `Konstantin Tretyakov <http://kt.era.ee/>`__
  * MIT License
+ * The icon used in the single-file executable is (c) `Umut Pulat <http://www.iconarchive.com/show/tulliana-2-icons-by-umut-pulat/log-icon.html>`__, licensed under LGPL.
