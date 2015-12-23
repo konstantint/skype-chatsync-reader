@@ -13,6 +13,7 @@ from struct import unpack, calcsize
 from collections import namedtuple
 from datetime import datetime
 import warnings
+import os.path
 from glob import glob
 
 
@@ -284,7 +285,7 @@ def parse_chatsync_profile_dir(dirname):
     Looks for all *.dat files in a Skype profile's chatsync/ dir,
     returns a list of SkypeChatParser objects for those files that could be parsed successfully.
     '''
-    files = glob("%s\*\*.dat" % dirname)
+    files = glob(os.path.join(dirname, "*", "*.dat"))
     results = []
     for f in files:
         try:
