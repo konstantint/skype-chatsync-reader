@@ -1,3 +1,6 @@
+NB: As of 2017, this tool DOES NOT SUPPORT recent versions of Skype
+-------------------------------------------------------------------
+
 ===============================================================================
 Parser and GUI viewer of chatsync/\*.dat files from the Skype profile directory
 ===============================================================================
